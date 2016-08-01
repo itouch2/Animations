@@ -9,6 +9,7 @@
 #import "MessageAlertView.h"
 #import "UIFont+Fonts.h"
 #import "UIView+SetRect.h"
+#import "UIView+UserInteraction.h"
 #import "POP.h"
 
 @interface MessageAlertView ()
@@ -32,6 +33,7 @@
         
         [self.contentView addSubview:self];
         
+        [self.contentView enabledUserInteraction];
         [self createBlackView];
         [self createMessageView];
         
@@ -76,11 +78,13 @@
     [textLabel sizeToFit];
     
     // 创建信息窗体view
-    self.messageView                 = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 190, textLabel.height + 20)];
-    self.messageView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.75f];
-    self.messageView.center          = self.contentView.middlePoint;
-    textLabel.center                 = self.messageView.middlePoint;
-    self.messageView.alpha           = 0.f;
+    self.messageView                   = [[UIView alloc] initWithFrame:CGRectMake(0, 0, textLabel.width + 20, textLabel.height + 20)];
+    self.messageView.backgroundColor   = [[UIColor blackColor] colorWithAlphaComponent:0.75f];
+    self.messageView.layer.borderWidth = 0.5f;
+    self.messageView.layer.borderColor = [UIColor blackColor].CGColor;
+    self.messageView.center            = self.contentView.middlePoint;
+    textLabel.center                   = self.messageView.middlePoint;
+    self.messageView.alpha             = 0.f;
     [self.messageView addSubview:textLabel];
     [self addSubview:self.messageView];
     
@@ -111,6 +115,7 @@
         
     } completion:^(BOOL finished) {
         
+        [self.contentView disableUserInteraction];
         [self removeFromSuperview];
     }];
 }

@@ -10,10 +10,13 @@
 #import "UIView+AnimationsListViewController.h"
 #import "UIView+SetRect.h"
 #import "UIView+GlowView.h"
+#import "UITableView+CellClass.h"
 #import "ListItemCell.h"
 #import "LineBackgroundView.h"
 #import "Item.h"
 #import "GCD.h"
+#import "PushAnimator.h"
+#import "PopAnimator.h"
 #import "UIFont+Fonts.h"
 
 #import "ButtonPressViewController.h"
@@ -64,30 +67,69 @@
 #import "iCarouselViewController.h"
 #import "GridFlowLayoutViewController.h"
 #import "InfiniteLoopViewController.h"
+#import "BaseControlViewController.h"
+#import "SpringScaleViewController.h"
+#import "TapPathDrawViewController.h"
+#import "QRCodeViewController.h"
+#import "MaskShapeViewController.h"
 
-@interface AnimationsListViewController () <UITableViewDelegate, UITableViewDataSource>
+@interface AnimationsListViewController () <UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate, UINavigationControllerDelegate>
 
-@property (nonatomic, strong) UITableView     *tableView;
-@property (nonatomic)         BOOL             tableViewLoadData;
+@property (nonatomic, strong) UITableView    *tableView;
+@property (nonatomic)         BOOL            tableViewLoadData;
 
-@property (nonatomic, strong) NSMutableArray  *items;
+@property (nonatomic, strong) NSMutableArray  <CellDataAdapter *> *items;
 
 @end
 
 @implementation AnimationsListViewController
 
-- (void)viewDidLoad {
+- (void)setup {
+
+    [super setup];
     
-    [super viewDidLoad];
+    [self rootViewControllerSetup];
     
     [self configureDataSource];
     
     [self configureTableView];
     
     [self configureTitleView];
+}
+
+#pragma mark - RootViewController setup.
+
+- (void)rootViewControllerSetup {
     
+    // [IMPORTANT] Enable the Push transitioning.
+    self.navigationController.delegate = self;
+    
+    // [IMPORTANT] Set the RootViewController's push delegate.
     [self useInteractivePopGestureRecognizer];
 }
+
+#pragma mark - Push or Pop event.
+
+- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC {
+    
+    if (operation == UINavigationControllerOperationPush) {
+        
+        return [PushAnimator new];
+        
+    } else if (operation == UINavigationControllerOperationPop) {
+        
+        return [PopAnimator new];
+        
+    } else {
+        
+        return nil;
+    }
+}
+
+#pragma mark - Config TitleView.
 
 - (void)configureTitleView {
     
@@ -129,6 +171,8 @@
         
     } afterDelaySecs:2.f];
 }
+
+#pragma mark - Config DataSource.
 
 - (void)configureDataSource {
     
@@ -179,7 +223,12 @@
                        [Item itemWithName:@"系统字体列表" object:[SystemFontInfoController class]],
                        [Item itemWithName:@"旋转木马效果" object:[iCarouselViewController class]],
                        [Item itemWithName:@"水平方向瀑布流" object:[GridFlowLayoutViewController class]],
-                       [Item itemWithName:@"无限轮播图" object:[InfiniteLoopViewController class]]];
+                       [Item itemWithName:@"无限轮播图" object:[InfiniteLoopViewController class]],
+                       [Item itemWithName:@"BaseControl按钮合集" object:[BaseControlViewController class]],
+                       [Item itemWithName:@"POP-缩放" object:[SpringScaleViewController class]],
+                       [Item itemWithName:@"点击区域的绘制" object:[TapPathDrawViewController class]],
+                       [Item itemWithName:@"QR-Code" object:[QRCodeViewController class]],
+                       [Item itemWithName:@"不规则形状的Mask" object:[MaskShapeViewController class]]];
     
     self.items = [NSMutableArray array];
     
@@ -188,14 +237,13 @@
         Item *item = array[i];
         item.index = i + 1;
         [item createAttributedString];
-        
-        CellDataAdapter *dataAdapter = [CellDataAdapter cellDataAdapterWithCellReuseIdentifier:@"ListItemCell" data:item
-                                                                                    cellHeight:0 cellType:0];
-        [self.items addObject:dataAdapter];
+
+        [self.items addObject:[ListItemCell dataAdapterWithCellReuseIdentifier:nil data:item cellHeight:0 type:0]];
     }
 }
 
-#pragma mark - tableView 相关
+#pragma mark - TableView Related.
+
 - (void)configureTableView {
     
     self.tableView                = [[UITableView alloc] initWithFrame:self.contentView.bounds style:UITableViewStylePlain];
@@ -203,8 +251,7 @@
     self.tableView.dataSource     = self;
     self.tableView.rowHeight      = 50.f;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.tableView registerClass:[ListItemCell class] forCellReuseIdentifier:@"ListItemCell"];
-    
+    [self.tableView registerCellsClass:@[cellClass(@"ListItemCell", nil)]];
     [self.contentView addSubview:self.tableView];
     
     [GCDQueue executeInMainQueue:^{
@@ -224,39 +271,20 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    if (self.tableViewLoadData == NO) {
-        
-        return 0;
-        
-    } else {
-        
-        return self.items.count;
-    }
+    return self.tableViewLoadData ? self.items.count : 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    CellDataAdapter *dataAdapter = self.items[indexPath.row];
-    CustomCell      *cell        = [tableView dequeueReusableCellWithIdentifier:dataAdapter.cellReuseIdentifier];
-    cell.indexPath               = indexPath;
-    cell.dataAdapter             = dataAdapter;
-    
-    [cell loadContent];
-    
-    return cell;
+    return [tableView dequeueAndLoadContentReusableCellFromAdapter:_items[indexPath.row] indexPath:indexPath controller:self];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    CellDataAdapter  *dataAdapter = self.items[indexPath.row];
-    Item             *item        = dataAdapter.data;
-    UIViewController *controller  = [item.object new];
-    controller.title              = item.name;
-    
-    [self.navigationController pushViewController:controller animated:YES];
+    [(CustomCell *)[tableView cellForRowAtIndexPath:indexPath] selectedEvent];    
 }
 
-#pragma mark -
+#pragma mark - Overwrite system methods.
 
 - (void)viewDidAppear:(BOOL)animated {
     
@@ -267,9 +295,7 @@
 - (void)viewDidDisappear:(BOOL)animated {
     
     [super viewDidDisappear:animated];
-    
-    // Disable pull back gesture.
-    self.enableInteractivePopGestureRecognizer = NO;
+    self.enableInteractivePopGestureRecognizer = YES;
 }
 
 @end

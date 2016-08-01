@@ -34,7 +34,7 @@
 @property (nonatomic, weak) id <CustomCellDelegate>  delegate;
 
 /**
- *  CustomCell's data.
+ *  CustomCell's dataAdapter.
  */
 @property (nonatomic, weak) CellDataAdapter         *dataAdapter;
 
@@ -63,7 +63,7 @@
  */
 @property (nonatomic)       BOOL                     display;
 
-#pragma mark - Useful method.
+#pragma mark - Method you should overwrite.
 
 /**
  *  Setup cell, override by subclass.
@@ -79,5 +79,100 @@
  *  Load content, override by subclass.
  */
 - (void)loadContent;
+
+/**
+ *  Calculate the cell's from data, override by subclass.
+ *
+ *  @param data Data.
+ *
+ *  @return Cell's height.
+ */
++ (CGFloat)cellHeightWithData:(id)data;
+
+#pragma mark - Useful method.
+
+/**
+ *  Update the cell's height with animated or not, before you use this method, you should have the weak reference 'tableView' and 'dataAdapter', and this method will update the weak reference dataAdapter's property cellHeight.
+ *
+ *  @param height   The new cell height.
+ *  @param animated Animated or not.
+ */
+- (void)updateWithNewCellHeight:(CGFloat)height animated:(BOOL)animated;
+
+/**
+ *  Selected event, you should use this method in 'tableView:didSelectRowAtIndexPath:' to make it effective.
+ */
+- (void)selectedEvent;
+
+#pragma mark - Constructor method.
+
+/**
+ *  Create the cell's dataAdapter.
+ *
+ *  @param reuseIdentifier Cell reuseIdentifier, can be nil.
+ *  @param data            Cell's data, can be nil.
+ *  @param height          Cell's height.
+ *  @param type            Cell's type.
+ *
+ *  @return Cell's dataAdapter.
+ */
++ (CellDataAdapter *)dataAdapterWithCellReuseIdentifier:(NSString *)reuseIdentifier data:(id)data
+                                             cellHeight:(CGFloat)height type:(NSInteger)type;
+
+/**
+ *  Create the cell's dataAdapter.
+ *
+ *  @param reuseIdentifier Cell reuseIdentifier, can be nil.
+ *  @param data            Cell's data, can be nil.
+ *  @param height          Cell's height.
+ *  @param width           Cell's width.
+ *  @param type            Cell's type.
+ *
+ *  @return Cell's dataAdapter.
+ */
++ (CellDataAdapter *)dataAdapterWithCellReuseIdentifier:(NSString *)reuseIdentifier data:(id)data
+                                             cellHeight:(CGFloat)height cellWidth:(CGFloat)cellWidth
+                                                   type:(NSInteger)type;
+
+/**
+ *  Create the cell's dataAdapter, the CellReuseIdentifier is the cell's class string.
+ *
+ *  @param data            Cell's data, can be nil.
+ *  @param height          Cell's height.
+ *  @param type            Cell's type.
+ *
+ *  @return Cell's dataAdapter.
+ */
++ (CellDataAdapter *)dataAdapterWithData:(id)data cellHeight:(CGFloat)height type:(NSInteger)type;
+
+/**
+ *  Create the cell's dataAdapter, the CellReuseIdentifier is the cell's class string.
+ *
+ *  @param data            Cell's data, can be nil.
+ *  @param height          Cell's height.
+ *
+ *  @return Cell's dataAdapter.
+ */
++ (CellDataAdapter *)dataAdapterWithData:(id)data cellHeight:(CGFloat)height;
+
+/**
+ *  Create the cell's dataAdapter, the CellReuseIdentifier is the cell's class string.
+ *
+ *  @param data            Cell's data, can be nil.
+ *
+ *  @return Cell's dataAdapter.
+ */
++ (CellDataAdapter *)dataAdapterWithData:(id)data;
+
+/**
+ *  Convenient method to set some weak reference.
+ *
+ *  @param dataAdapter CellDataAdapter's object.
+ *  @param data        Data.
+ *  @param indexPath   IndexPath.
+ *  @param tableView   TableView.
+ */
+- (void)setWeakReferenceWithCellDataAdapter:(CellDataAdapter *)dataAdapter data:(id)data
+                                  indexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView;
 
 @end

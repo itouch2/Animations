@@ -9,8 +9,8 @@
 #import "SDWebImageController.h"
 #import "PictureCell.h"
 #import "PictureModel.h"
-
-static NSString  *pictureCellFlag = @"PictureCell";
+#import "UIView+SetRect.h"
+#import "UITableView+CellClass.h"
 
 @interface SDWebImageController () <UITableViewDataSource, UITableViewDelegate>
 
@@ -44,22 +44,23 @@ static NSString  *pictureCellFlag = @"PictureCell";
         
         NSURL           *url         = [NSURL URLWithString:picsArray[count]];
         PictureModel    *model       = [PictureModel pictureModelWithPictureUrl:url haveAnimated:NO];
-        CellDataAdapter *dataAdapter = [CellDataAdapter cellDataAdapterWithCellReuseIdentifier:pictureCellFlag data:model
-                                                                                    cellHeight:0 cellType:0];
-        [_modelsArray addObject:dataAdapter];
+        model.pictureUrlString       = picsArray[count];
+        [_modelsArray addObject:[PictureCell dataAdapterWithCellReuseIdentifier:nil data:model cellHeight:0 type:0]];
     }
     
     // 初始化tableView
-    self.tableView                = [[UITableView alloc] initWithFrame:self.contentView.bounds];
-    self.tableView.delegate       = self;
-    self.tableView.dataSource     = self;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.rowHeight      = 200;
-    [self.tableView registerClass:[PictureCell class] forCellReuseIdentifier:pictureCellFlag];
+    self.tableView                 = [[UITableView alloc] initWithFrame:self.contentView.bounds];
+    self.tableView.delegate        = self;
+    self.tableView.dataSource      = self;
+    self.tableView.separatorStyle  = UITableViewCellSeparatorStyleNone;
+    self.tableView.rowHeight       = Width;
+    self.tableView.backgroundColor = [UIColor blackColor];
+    [self.tableView registerCellsClass:@[cellClass(@"PictureCell", nil)]];
     [self.contentView addSubview:self.tableView];
 }
 
-#pragma mark - DataSource代理
+#pragma mark - TableView's Delegate & DataSource.
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
     return _modelsArray.count;
@@ -67,14 +68,19 @@ static NSString  *pictureCellFlag = @"PictureCell";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    CellDataAdapter *dataAdapter = _modelsArray[indexPath.row];
-    
-    CustomCell *cell  = [tableView dequeueReusableCellWithIdentifier:dataAdapter.cellReuseIdentifier];
-    cell.dataAdapter  = dataAdapter;
-    cell.indexPath    = indexPath;
-    [cell loadContent];
-    
-    return cell;
+    return [tableView dequeueAndLoadContentReusableCellFromAdapter:_modelsArray[indexPath.row] indexPath:indexPath];
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+
+    CustomCell *customCell = (CustomCell *)cell;
+    customCell.display     = YES;
+}
+
+- (void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath*)indexPath {
+
+    CustomCell *customCell = (CustomCell *)cell;
+    customCell.display     = NO;
 }
 
 @end

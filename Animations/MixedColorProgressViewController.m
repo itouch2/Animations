@@ -74,18 +74,22 @@
         _downLabel.text               = @"YouXianMing - iOS Programmer";
         _downLabel.textAlignment = NSTextAlignmentCenter;
         [_downView addSubview:_downLabel];
+        
+        _downView.layer.borderWidth = 0.5f;
+        _downView.layer.borderColor = [UIColor redColor].CGColor;
     }
     
     // 显示上面一层
     [self.contentView bringSubviewToFront:_upView];
     
     // 给上面一层的frame值做动画
+    _md_get_weakSelf();
     _timer = [[GCDTimer alloc] initInQueue:[GCDQueue mainQueue]];
     [_timer event:^{
         
         [UIView animateWithDuration:0.5f delay:0.f usingSpringWithDamping:3.f initialSpringVelocity:0 options:0 animations:^{
             
-            _upView.width = arc4random() % 220;
+            weakSelf.upView.width = arc4random() % 220;
             
         } completion:nil];
         

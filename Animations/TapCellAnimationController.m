@@ -12,12 +12,13 @@
 #import "CellDataAdapter.h"
 #import "UIFont+Fonts.h"
 #import "UIView+SetRect.h"
+#import "UITableView+CellClass.h"
 #import "GCD.h"
 
 @interface TapCellAnimationController () <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) UITableView    *tableView;
-@property (nonatomic, strong) NSMutableArray *datasArray;
+@property (nonatomic, strong) NSMutableArray <CellDataAdapter *> *datasArray;
 
 @end
 
@@ -60,9 +61,7 @@
             ShowTextModel *model = [[ShowTextModel alloc] init];
             model.inputString    = strings[i];
             
-            [model calculateTheNormalStringHeightWithStringAttribute:@{NSFontAttributeName : [UIFont HeitiSCWithFontSize:14.f]} fixedWidth:Width - 20];
-            [model calculateTheExpendStringHeightWithStringAttribute:@{NSFontAttributeName : [UIFont HeitiSCWithFontSize:14.f]} fixedWidth:Width - 20];
-            
+            [ShowTextCell cellHeightWithData:model];
             CellDataAdapter *adapter = [CellDataAdapter cellDataAdapterWithCellReuseIdentifier:@"ShowTextCell" data:model
                                                                                     cellHeight:model.normalStringHeight
                                                                                       cellType:kShowTextCellNormalType];
@@ -90,41 +89,28 @@
     self.tableView.delegate       = self;
     self.tableView.dataSource     = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    
-    [self.tableView registerClass:[ShowTextCell class] forCellReuseIdentifier:@"ShowTextCell"];
     [self.contentView addSubview:self.tableView];
+    [self.tableView registerCellsClass:@[cellClass(@"ShowTextCell", nil)]];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    return self.datasArray.count;
+    return _datasArray.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    CellDataAdapter *dataAdapter = self.datasArray[indexPath.row];
-    
-    CustomCell *cell = [tableView dequeueReusableCellWithIdentifier:dataAdapter.cellReuseIdentifier];
-    cell.data        = dataAdapter.data;
-    cell.dataAdapter = dataAdapter;
-    cell.tableView   = tableView;
-    cell.indexPath   = indexPath;
-    [cell loadContent];
-    
-    return cell;
+    return [tableView dequeueAndLoadContentReusableCellFromAdapter:_datasArray[indexPath.row] indexPath:indexPath];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    ShowTextCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    [cell changeState];
+    [(CustomCell *)[tableView cellForRowAtIndexPath:indexPath] selectedEvent];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    CellDataAdapter *dataAdapter = self.datasArray[indexPath.row];
-    
-    return dataAdapter.cellHeight;
+    return _datasArray[indexPath.row].cellHeight;
 }
 
 @end

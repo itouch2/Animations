@@ -41,8 +41,8 @@
     
     NSDictionary *currentTime = [[SystemTimeInfomation sharedInstance] currentTimeInfomation];
     
-    CGFloat min = [currentTime[@"mm"] floatValue];
-    CGFloat sec = [currentTime[@"ss"] floatValue];
+    CGFloat min  = [currentTime[@"mm"] floatValue];
+    CGFloat sec  = [currentTime[@"ss"] floatValue];
     CGFloat hour = [currentTime[@"HH"] floatValue];
     
     {
@@ -139,26 +139,32 @@
         [self.contentView addSubview:circle];
     }
     
+    _md_get_weakSelf();
     self.timer = [[GCDTimer alloc] initInQueue:[GCDQueue mainQueue]];
     [self.timer event:^{
         
-        _secondCount                    += ONE_SEC;
-        self.secondView.fromCircleRadian = self.secondView.toCircleRadian;
-        self.secondView.toCircleRadian   = _secondCount;
-        [self.secondView startRotateAnimated:YES];
-        
-        _minuteCount                    += ONE_MIN;
-        self.minuteView.fromCircleRadian = self.minuteView.toCircleRadian;
-        self.minuteView.toCircleRadian   = _minuteCount;
-        [self.minuteView startRotateAnimated:YES];
-        
-        _hourCount                    += ONE_HOUR;
-        self.hourView.fromCircleRadian = self.hourView.toCircleRadian;
-        self.hourView.toCircleRadian   = _hourCount;
-        [self.hourView startRotateAnimated:YES];
+        [weakSelf timerEvent];
         
     } timeIntervalWithSecs:1.f];
     [self.timer start];
+}
+
+- (void)timerEvent {
+
+    _secondCount                    += ONE_SEC;
+    self.secondView.fromCircleRadian = self.secondView.toCircleRadian;
+    self.secondView.toCircleRadian   = _secondCount;
+    [self.secondView startRotateAnimated:YES];
+    
+    _minuteCount                    += ONE_MIN;
+    self.minuteView.fromCircleRadian = self.minuteView.toCircleRadian;
+    self.minuteView.toCircleRadian   = _minuteCount;
+    [self.minuteView startRotateAnimated:YES];
+    
+    _hourCount                    += ONE_HOUR;
+    self.hourView.fromCircleRadian = self.hourView.toCircleRadian;
+    self.hourView.toCircleRadian   = _hourCount;
+    [self.hourView startRotateAnimated:YES];
 }
 
 @end

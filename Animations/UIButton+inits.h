@@ -29,11 +29,49 @@ typedef enum : NSUInteger {
  *
  *  @return 创建好的button
  */
-+ (UIButton *)createButtonWithFrame:(CGRect)frame
-                         buttonType:(EButtonType)type
-                              title:(NSString *)title
-                                tag:(NSInteger)tag
-                             target:(id)target
-                             action:(SEL)selector;
++ (UIButton *)createButtonWithFrame:(CGRect)frame buttonType:(EButtonType)type title:(NSString *)title tag:(NSInteger)tag
+                             target:(id)target action:(SEL)selector;
+
+/**
+ *  设置高亮图片
+ *
+ *  @param image 高亮图片
+ */
+- (void)setHighlightedImage:(UIImage *)image;
+
+/**
+ *  返回高亮图片
+ *
+ *  @return 高亮图片
+ */
+- (UIImage *)highlightedImage;
+
+/**
+ *  设置普通图片
+ *
+ *  @param image 普通图片
+ */
+- (void)setNormalImage:(UIImage *)image;
+
+/**
+ *  返回普通图片
+ *
+ *  @return 普通图片
+ */
+- (UIImage *)normalImage;
+
+/**
+ *  设置选中的图片
+ *
+ *  @param image 选中的图片
+ */
+- (void)setSelectedImage:(UIImage *)image;
+
+/**
+ *  返回选中的图片
+ *
+ *  @return 选中的图片
+ */
+- (UIImage *)selectedImage;
 
 @end

@@ -13,13 +13,13 @@
 #import "DataModel.h"
 #import "UIView+SetRect.h"
 #import "UIFont+Fonts.h"
+#import "NSString+LabelWidthAndHeight.h"
 
 @interface LoadUrlDataCell ()
 
 @property (nonatomic, strong) UIImageView  *iconImageView;
 @property (nonatomic, strong) UILabel      *infoLabel;
 @property (nonatomic, strong) UIView       *lineView;
-@property (nonatomic, strong) UIButton     *button;
 
 @end
 
@@ -45,10 +45,6 @@
     self.lineView.backgroundColor = [UIColor grayColor];
     self.lineView.alpha           = 0.1f;
     [self addSubview:self.lineView];
-    
-    self.button = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, Width, 50)];
-    [self.button addTarget:self action:@selector(showSelectedAnimation) forControlEvents:UIControlEventTouchUpInside];
-    [self addSubview:self.button];
 }
 
 - (void)loadContent {
@@ -59,8 +55,7 @@
     self.infoLabel.width = Width - 80;
     [self.infoLabel sizeToFit];
     
-    self.lineView.y    = self.dataAdapter.cellHeight - 0.5f;
-    self.button.height = self.dataAdapter.cellHeight;
+    self.lineView.y = self.dataAdapter.cellHeight - 0.5f;
     
     __weak LoadUrlDataCell *wself = self;
     [wself.iconImageView sd_setImageWithURL:[NSURL URLWithString:model.user.avatar_image.url]
@@ -102,29 +97,48 @@
 
 - (void)showSelectedAnimation {
     
-    UIView *tmpView         = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Width, self.dataAdapter.cellHeight - 0.5f)];
-    tmpView.alpha           = 0.f;
-    tmpView.backgroundColor = [[UIColor colorWithRed:arc4random() % 256 / 255.f
-                                               green:arc4random() % 256 / 255.f
-                                                blue:arc4random() % 256 / 255.f
-                                               alpha:1.f] colorWithAlphaComponent:0.30];
+    UIView *tmpView                = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Width, self.dataAdapter.cellHeight - 0.5f)];
+    tmpView.alpha                  = 0.f;
+    tmpView.userInteractionEnabled = NO;
+    tmpView.backgroundColor        = [[UIColor colorWithRed:arc4random() % 256 / 255.f
+                                                      green:arc4random() % 256 / 255.f
+                                                       blue:arc4random() % 256 / 255.f
+                                                      alpha:1.f] colorWithAlphaComponent:0.30];
     [self addSubview:tmpView];
     
-    [UIView animateWithDuration:0.20 delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        
-        tmpView.alpha = 0.8f;
-        
-    } completion:^(BOOL finished) {
-        
-        [UIView animateWithDuration:0.20 delay:0.1 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            
-            tmpView.alpha = 0.f;
-            
-        } completion:^(BOOL finished) {
-            
-            [tmpView removeFromSuperview];
-        }];
-    }];
+    [UIView animateWithDuration:0.20 delay:0 options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
+                     animations:^{
+                         
+                         tmpView.alpha = 0.8f;
+                         
+                     } completion:^(BOOL finished) {
+                         
+                         [UIView animateWithDuration:0.20 delay:0.1 options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction
+                                          animations:^{
+                                              
+                                              tmpView.alpha = 0.f;
+                                              
+                                          } completion:^(BOOL finished) {
+                                              
+                                              [tmpView removeFromSuperview];
+                                          }];
+                     }];
+}
+
+- (void)selectedEvent {
+
+    [self showSelectedAnimation];
+}
+
++ (CGFloat)cellHeightWithData:(id)data {
+
+    DataModel *model = data;
+    
+    NSDictionary *fontInfo   = @{NSFontAttributeName: [UIFont HeitiSCWithFontSize:14.f]};
+    CGFloat       height     = [model.user.infomation.text heightWithStringAttribute:fontInfo fixedWidth:Width - 80];
+    CGFloat       cellHeight = height <= 50 ? 10 + 50 + 10 : 10 + height + 10;
+    
+    return cellHeight;
 }
 
 @end

@@ -36,11 +36,11 @@ typedef enum : NSUInteger {
 
     [super setup];
     
-    self.images = @[[UIImage imageNamed:@"1"],
+    self.images = @[[UIImage imageNamed:@"5"],
+                    [UIImage imageNamed:@"1"],
                     [UIImage imageNamed:@"2"],
                     [UIImage imageNamed:@"3"],
-                    [UIImage imageNamed:@"4"],
-                    [UIImage imageNamed:@"5"]];
+                    [UIImage imageNamed:@"4"]];
         
     self.tranformFadeViewOne               = [[CAGradientMaskView alloc] initWithFrame:self.contentView.bounds];
     self.tranformFadeViewOne.contentMode   = UIViewContentModeScaleAspectFill;
@@ -55,30 +55,36 @@ typedef enum : NSUInteger {
     [self.tranformFadeViewTwo fadeAnimated:NO];
     
     // timer
+    _md_get_weakSelf();
     self.timer = [[GCDTimer alloc] initInQueue:[GCDQueue mainQueue]];
     [self.timer event:^{
         
-        if (self.type == kTypeOne) {
-            
-            self.type = kTypeTwo;
-            
-            [self.contentView sendSubviewToBack:self.tranformFadeViewTwo];
-            self.tranformFadeViewTwo.image = [self currentImage];
-            [self.tranformFadeViewTwo showAnimated:NO];
-            [self.tranformFadeViewOne fadeAnimated:YES];
-            
-        } else {
-            
-            self.type = kTypeOne;
-            
-            [self.contentView sendSubviewToBack:self.tranformFadeViewOne];
-            self.tranformFadeViewOne.image = [self currentImage];
-            [self.tranformFadeViewOne showAnimated:NO];
-            [self.tranformFadeViewTwo fadeAnimated:YES];
-        }
+        [weakSelf timerEvent];
         
     } timeIntervalWithSecs:6 delaySecs:1.f];
     [self.timer start];
+}
+
+- (void)timerEvent {
+
+    if (self.type == kTypeOne) {
+        
+        self.type = kTypeTwo;
+        
+        [self.contentView sendSubviewToBack:self.tranformFadeViewTwo];
+        self.tranformFadeViewTwo.image = [self currentImage];
+        [self.tranformFadeViewTwo showAnimated:NO];
+        [self.tranformFadeViewOne fadeAnimated:YES];
+        
+    } else {
+        
+        self.type = kTypeOne;
+        
+        [self.contentView sendSubviewToBack:self.tranformFadeViewOne];
+        self.tranformFadeViewOne.image = [self currentImage];
+        [self.tranformFadeViewOne showAnimated:NO];
+        [self.tranformFadeViewTwo fadeAnimated:YES];
+    }
 }
 
 - (UIImage *)currentImage {
